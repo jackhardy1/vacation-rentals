@@ -35,7 +35,7 @@ namespace VacationRental.Contact.Api.Tests
                 AboutMe = "Fastest man alive"
             };
 
-            using (var updateResponse = await _client.PutAsJsonAsync($"/api/v1/vacationrental/{vacationRentalId}/contact", request))
+            using (var updateResponse = await _client.PostAsJsonAsync($"/api/v1/vacationrental/{vacationRentalId}/contact", request))
             {
                 Assert.True(updateResponse.IsSuccessStatusCode);
             }
@@ -58,7 +58,23 @@ namespace VacationRental.Contact.Api.Tests
         public async Task GivenAContactWithoutPhoneNumber_WhenUpdateContact_ThenBadRequestIsReturned()
         {
             var vacationRentalId = _rnd.Next();
-            var request = new
+
+			var createRequest = new
+			{
+				Forename = "Flash",
+				Surname = "Gordan",
+				Phone = "1800-SPEED-ING",
+				NativeLanguage = "English",
+				OtherSpokenLanguages = new[] { "Spanish" },
+				AboutMe = "Fastest man alive"
+			};
+
+			using (var createResponse = await _client.PostAsJsonAsync($"/api/v1/vacationrental/{vacationRentalId}/contact", createRequest))
+			{
+				Assert.True(createResponse.IsSuccessStatusCode);
+			}
+
+			var updateRequest = new
             {
                 Forename = "Flash",
                 Surname = "Gordan",
@@ -67,7 +83,7 @@ namespace VacationRental.Contact.Api.Tests
                 AboutMe = "Fastest man alive"
             };
 
-            using (var updateResponse = await _client.PutAsJsonAsync($"/api/v1/vacationrental/{vacationRentalId}/contact", request))
+            using (var updateResponse = await _client.PutAsJsonAsync($"/api/v1/vacationrental/{vacationRentalId}/contact", updateRequest))
             {
                 Assert.Equal(HttpStatusCode.BadRequest, updateResponse.StatusCode);
             }
