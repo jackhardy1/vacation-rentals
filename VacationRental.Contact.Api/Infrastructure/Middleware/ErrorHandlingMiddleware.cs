@@ -45,29 +45,40 @@ namespace VacationRental.Contact.Api.Infrastructure.Middleware
 
             if (exception is NotFoundException)
             {
-                var errorModel = new ServerErrorModel();
-
-                errorModel.code = HttpStatuses.NotFound;
-
-                errorModel.status = (int)HttpStatusCode.NotFound;
+                var errorModel = this.BuildError(HttpStatuses.NotFound, (int)HttpStatusCode.NotFound);
                 
                 response.errors.Add(errorModel);
             }
 
             if (exception is BadRequestException)
             {
-                var errorModel = new ServerErrorModel();
+                var errorModel = this.BuildError(HttpStatuses.BadRequest, (int)HttpStatusCode.BadRequest);
 
-                errorModel.code = HttpStatuses.BadRequest;
+                response.errors.Add(errorModel);
+            }
 
-                errorModel.status = (int)HttpStatusCode.BadRequest;
+            if (exception is EntityAlreadyExistsException)
+            {
+                var errorModel = this.BuildError(HttpStatuses.EntityAlreadyExists, (int)HttpStatusCode.Conflict);
 
                 response.errors.Add(errorModel);
             }
 
             return response;
         }
+
+        private ServerErrorModel BuildError(string code, int statusCode)
+        {
+            var errorModel = new ServerErrorModel();
+
+            errorModel.code = code;
+
+            errorModel.status = statusCode;
+
+            return errorModel;
+        }
     }
+
 
     public static class HttpStatusCodeExceptionMiddlewareExtensions
     {

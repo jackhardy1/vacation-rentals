@@ -1,13 +1,16 @@
 ﻿using System.Collections.Generic;
+using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.AspNetCore.Swagger;
-using VacationRental.Contact.Api.Controllers;
 using VacationRental.Contact.Api.Infrastructure.Middleware;
-using VacationRental.Contact.Api.Models;
+using VacationRental.Domain.Contact.EntityFramework;
+using VacationRental.Domain.Contact.Models;
 
 namespace VacationRental.Contact.Api
 {
@@ -29,7 +32,18 @@ namespace VacationRental.Contact.Api
 
             services.AddSingleton<IDictionary<int, ContactViewModel>>(new Dictionary<int, ContactViewModel>());
 
+            services.AddMediatR(typeof(Startup));
 
+            var connectionString = Configuration.GetConnectionString("DefaultConnection");
+
+            services.AddDbContext<ContactContext>(options =>
+              options.UseNpgsql(connectionString,
+                  optionsBuilder =>
+                      optionsBuilder.MigrationsAssembly("VacationRental.Contact.Api")
+                  )
+             );
+
+            services.AddAutoMapper();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

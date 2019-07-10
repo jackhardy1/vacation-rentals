@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\VacationRental.Contact.Api\VacationRental.Contact.Api.csproj" />
+    <ProjectReference Include="..\VacationRental.Domain.Contact\VacationRental.Domain.Contact.csproj" />
   </ItemGroup>
 
 </Project>

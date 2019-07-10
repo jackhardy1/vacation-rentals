@@ -1,4 +1,4 @@
-﻿namespace VacationRental.Contact.Api.Models
+﻿namespace VacationRental.Domain.Contact.Models
 {
     public class ContactViewModel
     {

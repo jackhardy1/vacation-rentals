@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using VacationRental.Contact.Api.Controllers;
 using VacationRental.Contact.Api.Models;
+using VacationRental.Domain.Contact.Models;
 using Xunit;
 
 namespace VacationRental.Contact.Api.Tests
