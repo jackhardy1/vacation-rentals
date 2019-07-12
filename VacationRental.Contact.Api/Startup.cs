@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,6 +10,8 @@ using Swashbuckle.AspNetCore.Swagger;
 using VacationRental.Contact.Api.Infrastructure.Middleware;
 using VacationRental.Domain.Contact.EntityFramework;
 using VacationRental.Domain.Contact.Models;
+using VacationRental.Domain.Contact.Queries;
+using VacationRental.Domain.Contact.Commands;
 
 namespace VacationRental.Contact.Api
 {
@@ -34,6 +35,10 @@ namespace VacationRental.Contact.Api
 
             services.AddMediatR(typeof(Startup));
 
+            services.AddMediatR(typeof(ContactQuery));
+            services.AddMediatR(typeof(CreateContactCommand));
+            services.AddMediatR(typeof(UpdateContactCommand));
+
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
 
             services.AddDbContext<ContactContext>(options =>
@@ -43,7 +48,7 @@ namespace VacationRental.Contact.Api
                   )
              );
 
-            services.AddAutoMapper();
+            //services.AddAutoMapper();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

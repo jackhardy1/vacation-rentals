@@ -16,12 +16,10 @@ namespace VacationRental.Contact.Api.Controllers
     public class ContactController : ControllerBase
     {
         private IMediator mediator;
-        private IMapper mapper;
 
-        public ContactController(IMediator _mediator, IMapper _mapper)
+        public ContactController(IMediator _mediator)
         {
             this.mediator = _mediator;
-            this.mapper = _mapper;
         }
 
         [HttpPost]
@@ -63,7 +61,7 @@ namespace VacationRental.Contact.Api.Controllers
                 throw new NotFoundException();
             }
 
-            var contactViewModel = this.mapper.Map<ContactViewModel>(contact);
+            var contactViewModel = this.MapToViewModel(contact);
 
             return contactViewModel;
         }
@@ -92,7 +90,7 @@ namespace VacationRental.Contact.Api.Controllers
 
         private async Task<Contact> CreateContact(int rentalId, ContactViewModel model)
         {
-            var contact = this.mapper.Map<Contact>(model);
+            var contact = this.MapToDataModel(model);
             contact.Id = rentalId;
 
             var createdContact = await this.mediator.Send(new CreateContactCommand { Contact = contact });
@@ -109,12 +107,38 @@ namespace VacationRental.Contact.Api.Controllers
                 throw new BadRequestException();
             }
 
-            var contact = this.mapper.Map<Contact>(model);
+            var contact = this.MapToDataModel(model);
             contact.Id = rentalId;
 
             var updatedContact = await this.mediator.Send(new UpdateContactCommand { Contact = contact });
 
             return updatedContact;
+        }
+
+        private Contact MapToDataModel(ContactViewModel model)
+        {
+            return new Contact
+            {
+                Forename = model.Forename,
+                AboutMe = model.AboutMe,
+                Surname = model.Surname,
+                Phone = model.Phone,
+                NativeLanguage = model.NativeLanguage,
+                OtherSpokenLanguages = model.OtherSpokenLanguages,
+            };
+        }
+
+        private ContactViewModel MapToViewModel(Contact contact)
+        {
+            return new ContactViewModel
+            {
+                Forename = contact.Forename,
+                AboutMe = contact.AboutMe,
+                Surname = contact.Surname,
+                Phone = contact.Phone,
+                NativeLanguage = contact.NativeLanguage,
+                OtherSpokenLanguages = contact.OtherSpokenLanguages,
+            };
         }
     }
 }
