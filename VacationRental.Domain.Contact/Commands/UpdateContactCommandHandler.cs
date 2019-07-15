@@ -17,7 +17,9 @@
 
         public async Task<Contact> Handle(UpdateContactCommand request, CancellationToken cancellationToken)
         {
-            this.contactContext.Update(request.Contact);
+            var contact = await this.contactContext.FindAsync<Contact>(request.Contact.Id);
+
+            contact = request.Contact;
 
             await this.contactContext.SaveChangesAsync();
 

@@ -9,12 +9,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.AspNetCore.Swagger;
 using VacationRental.Contact.Api.Infrastructure.Middleware;
 using VacationRental.Domain.Contact.EntityFramework;
-using VacationRental.Domain.Contact.Models;
 using VacationRental.Domain.Contact.Queries;
 using VacationRental.Domain.Contact.Commands;
 
 namespace VacationRental.Contact.Api
 {
+    using AutoMapper;
+    using FluentValidation;
+    using FluentValidation.AspNetCore;
+    using Microsoft.AspNetCore.Http;
+    using VacationRental.Domain.Contact.Models;
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -27,17 +32,24 @@ namespace VacationRental.Contact.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                .AddFluentValidation(fv => { });
+
+            services.AddTransient<IValidator<Contact>, ContactPreValidator>();
 
             services.AddSwaggerGen(opts => opts.SwaggerDoc("v1", new Info { Title = "Vacation rental contact information", Version = "v1" }));
 
             services.AddSingleton<IDictionary<int, ContactViewModel>>(new Dictionary<int, ContactViewModel>());
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddMediatR(typeof(Startup));
 
             services.AddMediatR(typeof(ContactQuery));
             services.AddMediatR(typeof(CreateContactCommand));
             services.AddMediatR(typeof(UpdateContactCommand));
+
+            services.AddAutoMapper(typeof(Startup));
 
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
 
@@ -47,8 +59,6 @@ namespace VacationRental.Contact.Api
                       optionsBuilder.MigrationsAssembly("VacationRental.Contact.Api")
                   )
              );
-
-            //services.AddAutoMapper();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

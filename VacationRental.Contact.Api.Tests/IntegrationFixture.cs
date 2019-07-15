@@ -16,7 +16,11 @@ namespace VacationRental.Contact.Api.Tests
 
         public IntegrationFixture()
         {
-            _server = new TestServer(new WebHostBuilder().UseStartup<Startup>());
+            var webhostBuilder = new WebHostBuilder()
+            .UseStartup<Startup>()
+            .UseSetting("ConnectionStrings:DefaultConnection", "Host=localhost;Port=5432;Username=postgres;Password=password;Database=Contacts;");
+
+            _server = new TestServer(webhostBuilder);
 
             Client = _server.CreateClient();
         }

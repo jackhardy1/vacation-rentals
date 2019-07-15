@@ -10,22 +10,27 @@ namespace VacationRental.Contact.Api.Controllers
 {
     using VacationRental.Domain.Contact.Models;
     using VacationRental.Domain.Contact.Commands;
+    using FluentValidation;
 
     [Route("api/v1/vacationrental/{rentalId:int}/contact")]
     [ApiController]
     public class ContactController : ControllerBase
     {
-        private IMediator mediator;
+        private readonly IMediator mediator;
+        private readonly IValidator<Contact> validator;
+        private readonly IMapper mapper;
 
-        public ContactController(IMediator _mediator)
+        public ContactController(IMediator _mediator, IValidator<Contact> _validator, IMapper _mapper)
         {
             this.mediator = _mediator;
+            this.validator = _validator;
+            this.mapper = _mapper;
         }
 
-        [HttpPost]
+        [HttpPost]  
         public async Task<Contact> Create([FromRoute] int rentalId, [FromBody] ContactViewModel model)
         {
-            this.ValidateModel(model);
+            await CheckEntityExists(rentalId);
 
             var contact = await this.CreateContact(rentalId, model);
 
@@ -35,25 +40,6 @@ namespace VacationRental.Contact.Api.Controllers
         [HttpGet]
         public async Task<ContactViewModel> Get([FromRoute] int rentalId)
         {
-            var contact = await GetContactInfo(rentalId);
-
-            return contact;
-        }
-
-        [HttpPut]
-        public async Task<Contact> Put([FromRoute] int rentalId, [FromBody] ContactViewModel model)
-        {
-            await this.GetContactInfo(rentalId);
-
-            this.ValidateModel(model);
-
-            var contact = await this.UpdateContact(rentalId, model);
-
-            return contact;
-        }
-
-        private async Task<ContactViewModel> GetContactInfo(int rentalId)
-        {
             var contact = await this.mediator.Send(new ContactQuery { VacationRentalId = rentalId });
 
             if (contact == null)
@@ -61,36 +47,42 @@ namespace VacationRental.Contact.Api.Controllers
                 throw new NotFoundException();
             }
 
-            var contactViewModel = this.MapToViewModel(contact);
+            var contactViewModel = this.mapper.Map<ContactViewModel>(contact);
 
             return contactViewModel;
         }
 
-        private void ValidateModel(ContactViewModel model)
+        [HttpPut]
+        public async Task<Contact> Put([FromRoute] int rentalId, [FromBody] ContactViewModel model)
         {
-            var properties = model.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var existingContact = await this.mediator.Send(new ContactQuery { VacationRentalId = rentalId });
 
-            foreach (var prop in properties)
+            if (existingContact == null)
             {
-                var value = prop.GetValue(model, null);
-
-                if (value == null)
-                {
-                    throw new BadRequestException();
-                }
+                throw new BadRequestException();
             }
-        }
-
-        private async Task<Contact> GetContact(int rentalId)
-        {
-            var contact = await this.mediator.Send(new ContactQuery { VacationRentalId = rentalId });
+            
+            var contact = await this.UpdateContact(rentalId, model);
 
             return contact;
         }
 
+        private async Task CheckEntityExists(int rentalId)
+        {
+            var existing = await this.mediator.Send(new ContactQuery { VacationRentalId = rentalId });
+
+            if (existing != null)
+            {
+                throw new EntityAlreadyExistsException();
+            }
+        }
+
         private async Task<Contact> CreateContact(int rentalId, ContactViewModel model)
         {
-            var contact = this.MapToDataModel(model);
+            var contact = this.mapper.Map<Contact>(model);
+
+            await this.validator.ValidateAndThrowAsync(contact);
+
             contact.Id = rentalId;
 
             var createdContact = await this.mediator.Send(new CreateContactCommand { Contact = contact });
@@ -100,45 +92,15 @@ namespace VacationRental.Contact.Api.Controllers
 
         private async Task<Contact> UpdateContact(int rentalId, ContactViewModel model)
         {
-            var existingContact = await this.GetContact(rentalId);
+            var contact = this.mapper.Map<Contact>(model);
 
-            if (existingContact != null)
-            {
-                throw new BadRequestException();
-            }
+            await this.validator.ValidateAndThrowAsync(contact);
 
-            var contact = this.MapToDataModel(model);
             contact.Id = rentalId;
 
             var updatedContact = await this.mediator.Send(new UpdateContactCommand { Contact = contact });
 
             return updatedContact;
-        }
-
-        private Contact MapToDataModel(ContactViewModel model)
-        {
-            return new Contact
-            {
-                Forename = model.Forename,
-                AboutMe = model.AboutMe,
-                Surname = model.Surname,
-                Phone = model.Phone,
-                NativeLanguage = model.NativeLanguage,
-                OtherSpokenLanguages = model.OtherSpokenLanguages,
-            };
-        }
-
-        private ContactViewModel MapToViewModel(Contact contact)
-        {
-            return new ContactViewModel
-            {
-                Forename = contact.Forename,
-                AboutMe = contact.AboutMe,
-                Surname = contact.Surname,
-                Phone = contact.Phone,
-                NativeLanguage = contact.NativeLanguage,
-                OtherSpokenLanguages = contact.OtherSpokenLanguages,
-            };
         }
     }
 }

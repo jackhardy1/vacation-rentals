@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
@@ -50,7 +51,7 @@ namespace VacationRental.Contact.Api.Infrastructure.Middleware
                 response.errors.Add(errorModel);
             }
 
-            if (exception is BadRequestException)
+            if (exception is ValidationException)
             {
                 var errorModel = this.BuildError(HttpStatuses.BadRequest, (int)HttpStatusCode.BadRequest);
 

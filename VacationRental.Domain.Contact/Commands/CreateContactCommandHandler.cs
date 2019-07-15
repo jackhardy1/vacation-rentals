@@ -19,6 +19,8 @@
         {
             await this.contactContext.AddAsync(request.Contact);
 
+            await this.contactContext.SaveChangesAsync();
+
             return request.Contact;
         }
     }
