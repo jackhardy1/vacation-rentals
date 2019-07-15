@@ -1,4 +1,11 @@
-# Backend C# developer project
+# Technical Test for Lodgify, completed by Jack Hardy
+
+## Prerequisites
+
+- Download postgres [download postgresql](https://www.postgresql.org/download/)
+- Make sure Postgres is running on port 5432, and that the username 'postgres' is set with the password 'password'. 
+
+# Original Test Information
 
 ## Background
 
